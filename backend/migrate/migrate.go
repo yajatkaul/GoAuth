@@ -11,5 +11,8 @@ func init() {
 }
 
 func main() {
-	inits.DB.AutoMigrate(&models.User{})
+    err := inits.DB.AutoMigrate(&models.User{}, &models.Message{}, &models.Conversation{})
+    if err != nil {
+        panic("failed to migrate database schema")
+    }
 }

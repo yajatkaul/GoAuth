@@ -5,6 +5,7 @@ import (
 	"GoChat/backend/models"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -48,7 +49,7 @@ func SignUp(c *gin.Context) {
 
     // Set a cookie
     cookieName := "session_id" 
-    cookieValue := "example_session_value"
+    cookieValue := strconv.FormatUint(uint64(user.ID), 10)
     httpOnly := true
     secure := false
     
@@ -84,7 +85,7 @@ func LogIn(c *gin.Context) {
 
     // Set a cookie
     cookieName := "session_id" 
-    cookieValue := "example_session_value"
+    cookieValue := strconv.FormatUint(uint64(user.ID), 10)
     httpOnly := true
     secure := false
     
