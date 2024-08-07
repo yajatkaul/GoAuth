@@ -16,5 +16,7 @@ func init() {
 func main() {
 	r := gin.Default()
 	r.POST("/api/signup", controllers.SignUp)
+	r.POST("/api/login", controllers.LogIn)
+	r.GET("/api/logout", controllers.LogOut)
 	r.Run() // listen and serve on 0.0.0.0:PORT
 }
