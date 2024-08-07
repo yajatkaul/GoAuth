@@ -1,18 +1,14 @@
 package main
 
 import (
-	"log"
+	"GoChat/backend/inits"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
 //Special function
 func init() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	inits.LoadEnvVaribles()
 }
 
 func main() {
