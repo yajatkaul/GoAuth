@@ -4,6 +4,7 @@ import (
 	"GoChat/backend/inits"
 	"GoChat/backend/models"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -35,7 +36,11 @@ func SignUp(c *gin.Context) {
 
     result := inits.DB.Create(&user)
     if result.Error != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
+        if strings.Contains(result.Error.Error(), "duplicate key value violates unique constraint") {
+            c.JSON(http.StatusConflict, gin.H{"error": "Username already exists"})
+        } else {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
+        }
         return
     }
 
