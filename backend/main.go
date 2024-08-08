@@ -1,8 +1,8 @@
 package main
 
 import (
-	"GoChat/backend/controllers"
-	"GoChat/backend/inits"
+	"GoAuth/backend/controllers"
+	"GoAuth/backend/inits"
 
 	"github.com/gin-gonic/gin"
 )

@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"GoChat/backend/inits"
-	"GoChat/backend/models"
+	"GoAuth/backend/inits"
+	"GoAuth/backend/models"
 	"errors"
 	"net/http"
 	"strconv"

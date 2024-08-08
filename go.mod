@@ -1,4 +1,4 @@
-module GoChat
+module GoAuth
 
 go 1.22.3
 

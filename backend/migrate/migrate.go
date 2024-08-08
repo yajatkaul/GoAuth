@@ -1,8 +1,8 @@
 package main
 
 import (
-	"GoChat/backend/inits"
-	"GoChat/backend/models"
+	"GoAuth/backend/inits"
+	"GoAuth/backend/models"
 )
 
 func init() {
