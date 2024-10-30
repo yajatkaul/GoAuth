@@ -1,97 +1,68 @@
 package controllers
 
 import (
+	"context"
+
+	"net/http"
+
 	"GoAuth/backend/inits"
 	"GoAuth/backend/models"
-	"errors"
-	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type SignUpBody struct {
-    UserName string `json:"userName"`
-    Password string `json:"password"`
-    ConfirmPassword string `json:"confirmPassword"`
-}
-
 func SignUp(c *gin.Context) {
-    // Parse the raw JSON body
-    var body SignUpBody
-    if err := c.BindJSON(&body); err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
+	var user models.User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-    if (body.Password != body.ConfirmPassword){
-        c.JSON(http.StatusBadRequest, gin.H{"error": "Password's dont match"})
-        return
-    }
+	collection := inits.DB.Database("testdb").Collection("users")
 
-    user := models.User{
-        UserName: body.UserName,
-        Password: body.Password,
-    }
+	result, err := collection.InsertOne(context.TODO(), user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-    result := inits.DB.Create(&user)
-    if result.Error != nil {
-        if errors.Is(result.Error,  gorm.ErrDuplicatedKey) {
-            // Handle unique constraint violation
-            c.JSON(http.StatusConflict, gin.H{"error": "Username already exists"})
-        } else {
-            // Handle other errors
-            c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
-        }
-        return
-    }
-
-    // Set a cookie
-    cookieName := "session_id" 
-    cookieValue := strconv.FormatUint(uint64(user.ID), 10)
-    httpOnly := true
-    secure := false
-    
-    c.SetCookie(cookieName, cookieValue, 3600, "/", "", secure, httpOnly)
-
-    c.JSON(http.StatusOK, gin.H{"user": user})
+	c.JSON(http.StatusCreated, gin.H{"id": result.InsertedID})
 }
 
-type LogInBody struct {
-    UserName string `json:"userName"`
-    Password string `json:"password"`
+type LoginRequest struct {
+    Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
 
-func LogIn(c *gin.Context) {
-    // Parse the raw JSON body
-    var body LogInBody
-    if err := c.BindJSON(&body); err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
+func Login(c *gin.Context) {
+	var login LoginRequest
 
-    var user models.User
-    result := inits.DB.Where("user_name = ?", body.UserName).First(&user)
+	if err := c.ShouldBindJSON(&login); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-    if result.Error != nil {
-        if result.Error == gorm.ErrRecordNotFound {
-            c.JSON(http.StatusNotFound, gin.H{"error": "User or password incorrect"})
-        } else {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
-        }
-        return
-    }
+	var user models.User
+	collection := inits.DB.Database("testdb").Collection("users")
 
-    // Set a cookie
-    cookieName := "session_id" 
-    cookieValue := strconv.FormatUint(uint64(user.ID), 10)
-    httpOnly := true
-    secure := false
-    
-    c.SetCookie(cookieName, cookieValue, 3600, "/", "", secure, httpOnly)
+	err := collection.FindOne(context.TODO(), bson.M{"username": login.Username}).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		}
+		return
+	}
 
-    c.JSON(http.StatusOK, gin.H{"user": user.UserName})
+	if login.Password != user.Password {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Login successful"})	
 }
 
 func LogOut(c *gin.Context) {   
@@ -103,4 +74,3 @@ func LogOut(c *gin.Context) {
     // Respond to the client
     c.JSON(http.StatusOK, gin.H{"message": "Cookie removed"})
 }
-
