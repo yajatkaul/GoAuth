@@ -16,7 +16,7 @@
 
 ```shell
 PORT = portNo
-DB_URI = "SQL_RUI"
+DB_URI = "dbUri"
 ```
 
 <h1 align="left">Changes to be made</h1>
