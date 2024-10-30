@@ -23,10 +23,10 @@ DB_URI = "SQL_RUI"
 
 ###
 
-<h3 align="left">Adding server side sessions</h3>
+~~<h3 align="left">Adding server side sessions</h3>~~
 
 ###
 
-> <p align="left">~~- Need to manage the session tokens on the server side~~</p>
+> ~~<p align="left">- Need to manage the session tokens on the server side</p>~~
 
 ###
