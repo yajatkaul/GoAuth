@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"time"
 
 	"net/http"
 
@@ -9,6 +10,7 @@ import (
 	"GoAuth/backend/models"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -25,6 +27,32 @@ func SignUp(c *gin.Context) {
 	result, err := collection.InsertOne(context.TODO(), user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	sessionId := uuid.New().String()
+
+	expTime := 7 * 24 * time.Hour
+
+	cookie := &http.Cookie{
+		Name:    "sessionId",
+		Value:   sessionId,
+		Expires: time.Now().Add(expTime), 
+		Path:    "/",
+	}
+	http.SetCookie(c.Writer, cookie)
+
+	validTill := time.Now().Add(expTime)
+	session := models.Sessions{
+		ID:        sessionId, 
+		UserId:    user.ID.Hex(),
+		ValidTill: validTill,
+	}
+
+	sessionCollection := inits.DB.Database("testdb").Collection("sessions")
+	_, err = sessionCollection.InsertOne(context.TODO(), session)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create session"})
 		return
 	}
 
@@ -62,11 +90,37 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	sessionId := uuid.New().String()
+
+	expTime := 7 * 24 * time.Hour
+
+	cookie := &http.Cookie{
+		Name:    "sessionId",
+		Value:   sessionId,
+		Expires: time.Now().Add(expTime), 
+		Path:    "/",
+	}
+	http.SetCookie(c.Writer, cookie)
+
+	validTill := time.Now().Add(expTime)
+	session := models.Sessions{
+		ID:        sessionId, 
+		UserId:    user.ID.Hex(),
+		ValidTill: validTill,
+	}
+
+	sessionCollection := inits.DB.Database("testdb").Collection("sessions")
+	_, err = sessionCollection.InsertOne(context.TODO(), session)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create session"})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "Login successful"})	
 }
 
-func LogOut(c *gin.Context) {   
-    cookieName := "session_id"
+func Logout(c *gin.Context) {   
+    cookieName := "sessionId"
 
     // Set the cookie with an expired date to remove it
     c.SetCookie(cookieName, "", -1, "/", "", false, true)
