@@ -27,6 +27,6 @@ DB_URI = "SQL_RUI"
 
 ###
 
-> <p align="left">- Need to manage the session tokens on the server side</p>
+> <p align="left">~~- Need to manage the session tokens on the server side~~</p>
 
 ###
