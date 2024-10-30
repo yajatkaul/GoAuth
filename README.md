@@ -21,12 +21,9 @@ DB_URI = "SQL_RUI"
 
 <h1 align="left">Changes to be made</h1>
 
-###
-
-<h3 align="left">~~Adding server side sessions~~</h3>
 
 ###
-
-> <p align="left">- Need to manage the session tokens on the server side</p>
+> ~~- Need to manage the session tokens on the server side~~
+###
 
 ###
